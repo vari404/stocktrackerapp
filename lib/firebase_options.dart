@@ -52,7 +52,7 @@ class DefaultFirebaseOptions {
 
   static const FirebaseOptions android = FirebaseOptions(
     apiKey: 'AIzaSyAEpoojirmWXXCvUc0B6TssG_QNagIq3iA',
-    appId: '1:713457170325:android:fc5c029f8cf9b661f2289c',
+    appId: '1:713457170325:android:10182e3df6862d83f2289c',
     messagingSenderId: '713457170325',
     projectId: 'stocktrackerapp-919cd',
     storageBucket: 'stocktrackerapp-919cd.firebasestorage.app',
@@ -85,4 +85,5 @@ class DefaultFirebaseOptions {
     storageBucket: 'stocktrackerapp-919cd.firebasestorage.app',
     measurementId: 'G-0GQF4E5WMJ',
   );
+
 }
