@@ -11,8 +11,7 @@ class AppDrawer extends StatelessWidget {
         children: [
           // Drawer Header
           Container(
-            width: double
-                .infinity, // Ensures the container takes up the full width of the drawer
+            width: double.infinity,
             decoration: BoxDecoration(
               color: Theme.of(context).colorScheme.primary,
             ),
@@ -65,6 +64,12 @@ class AppDrawer extends StatelessWidget {
                   title: const Text('Profile'),
                   onTap: () =>
                       Navigator.pushReplacementNamed(context, '/profile'),
+                ),
+                ListTile(
+                  leading: const Icon(Icons.settings),
+                  title: const Text('Settings'),
+                  onTap: () =>
+                      Navigator.pushReplacementNamed(context, '/settings'),
                 ),
               ],
             ),

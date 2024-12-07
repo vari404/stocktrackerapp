@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:stocktrackerapp/features/home/home_screen.dart';
 import 'package:stocktrackerapp/screens/forgot_password_screen.dart';
-import 'package:stocktrackerapp/screens/welcome_screen.dart'; // Import WelcomeScreen
-import 'package:stocktrackerapp/screens/sign_in_screen.dart'; // Import SignInScreen
-import 'package:stocktrackerapp/screens/sign_up_screen.dart'; // Import SignUpScreen
+import 'package:stocktrackerapp/screens/welcome_screen.dart';
+import 'package:stocktrackerapp/screens/sign_in_screen.dart';
+import 'package:stocktrackerapp/screens/sign_up_screen.dart';
+import 'package:stocktrackerapp/screens/profile_screen.dart'; // Import ProfileScreen
+import 'package:stocktrackerapp/screens/settings_screen.dart'; // Import SettingsScreen
 
 class Routes {
   static Route? generateRoute(RouteSettings settings) {
@@ -18,6 +20,10 @@ class Routes {
         return MaterialPageRoute(builder: (_) => const SignUpScreen());
       case '/forgot-password':
         return MaterialPageRoute(builder: (_) => const ForgotPasswordScreen());
+      case '/profile':
+        return MaterialPageRoute(builder: (_) => const ProfileScreen());
+      case '/settings':
+        return MaterialPageRoute(builder: (_) => const SettingsScreen());
       default:
         return null;
     }
