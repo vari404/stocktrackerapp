@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:stocktrackerapp/features/home/home_screen.dart';
+import 'package:stocktrackerapp/features/portfolio/portfolio_screen.dart';
+import 'package:stocktrackerapp/features/watchlist/watchlist_screen.dart';
+import 'package:stocktrackerapp/features/newsfeed/newsfeed_screen.dart';
 import 'package:stocktrackerapp/screens/forgot_password_screen.dart';
 import 'package:stocktrackerapp/screens/welcome_screen.dart';
 import 'package:stocktrackerapp/screens/sign_in_screen.dart';
 import 'package:stocktrackerapp/screens/sign_up_screen.dart';
-import 'package:stocktrackerapp/screens/profile_screen.dart'; // Import ProfileScreen
-import 'package:stocktrackerapp/screens/settings_screen.dart'; // Import SettingsScreen
+import 'package:stocktrackerapp/screens/profile_screen.dart';
+import 'package:stocktrackerapp/screens/settings_screen.dart';
 
 class Routes {
   static Route? generateRoute(RouteSettings settings) {
@@ -14,6 +17,12 @@ class Routes {
         return MaterialPageRoute(builder: (_) => const WelcomeScreen());
       case '/home':
         return MaterialPageRoute(builder: (_) => const HomeScreen());
+      case '/portfolio':
+        return MaterialPageRoute(builder: (_) => const PortfolioScreen());
+      case '/watchlist':
+        return MaterialPageRoute(builder: (_) => const WatchlistScreen());
+      case '/newsfeed':
+        return MaterialPageRoute(builder: (_) => const NewsfeedScreen());
       case '/sign-in':
         return MaterialPageRoute(builder: (_) => const SignInScreen());
       case '/sign-up':

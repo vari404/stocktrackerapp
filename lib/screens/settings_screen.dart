@@ -3,9 +3,28 @@ import 'package:provider/provider.dart';
 import 'package:stocktrackerapp/themes/theme_provider.dart';
 import 'package:stocktrackerapp/widgets/app_drawer.dart';
 import 'package:stocktrackerapp/widgets/custom_app_bar.dart';
+import 'package:stocktrackerapp/widgets/bottom_nav_bar.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({Key? key}) : super(key: key);
+
+  void _onTabSelected(BuildContext context, int index) {
+    switch (index) {
+      case 0:
+        Navigator.pushReplacementNamed(context, '/home');
+        break;
+      case 1:
+        Navigator.pushReplacementNamed(context, '/portfolio');
+        break;
+      case 2:
+        Navigator.pushReplacementNamed(context, '/watchlist');
+        break;
+      case 3:
+        Navigator.pushReplacementNamed(context, '/newsfeed');
+        break;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -34,11 +53,13 @@ class SettingsScreen extends StatelessWidget {
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: ListTile(
-                  leading: Icon(Icons.dark_mode, color: Colors.white),
-                  title: Text(
+                  leading: const Icon(Icons.dark_mode, color: Colors.white),
+                  title: const Text(
                     "Dark Mode",
                     style: TextStyle(
-                        color: Colors.white, fontWeight: FontWeight.bold),
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                   trailing: Consumer<ThemeProvider>(
                     builder: (context, themeProvider, child) {
@@ -53,10 +74,15 @@ class SettingsScreen extends StatelessWidget {
                     },
                   ),
                 ),
-              )
+              ),
             ],
           ),
         ),
+      ),
+      bottomNavigationBar: BottomNavBar(
+        currentIndex:
+            0, // Default index, you can set it as Home (or adjust based on app navigation)
+        onTabSelected: (index) => _onTabSelected(context, index),
       ),
     );
   }

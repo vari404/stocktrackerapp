@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:stocktrackerapp/widgets/app_drawer.dart'; // Import for AppDrawer
-import 'package:stocktrackerapp/widgets/custom_app_bar.dart'; // Import for CustomAppBar
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:stocktrackerapp/widgets/app_drawer.dart';
+import 'package:stocktrackerapp/widgets/custom_app_bar.dart';
+import 'package:stocktrackerapp/widgets/bottom_nav_bar.dart';
 import 'package:stocktrackerapp/features/home/widgets/tabs/stock_overview_tab.dart';
 import 'package:stocktrackerapp/features/home/widgets/tabs/trending_stocks_tab.dart';
 
@@ -19,22 +20,37 @@ class _HomeScreenState extends State<HomeScreen> {
     TrendingStocksTab(),
   ];
 
+  void _onTabSelected(BuildContext context, int index) {
+    switch (index) {
+      case 0:
+        Navigator.pushReplacementNamed(context, '/home');
+        break;
+      case 1:
+        Navigator.pushReplacementNamed(context, '/portfolio');
+        break;
+      case 2:
+        Navigator.pushReplacementNamed(context, '/watchlist');
+        break;
+      case 3:
+        Navigator.pushReplacementNamed(context, '/newsfeed');
+        break;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final user = FirebaseAuth.instance.currentUser;
     final greeting = _getGreeting();
 
     return Scaffold(
-      appBar:
-          CustomAppBar(title: 'Stock Tracker'), // CustomAppBar with gradient
+      appBar: const CustomAppBar(title: 'Stock Tracker'),
       drawer: AppDrawer(),
       body: Stack(
         children: [
-          // Background design matching WelcomeScreen (white background)
+          // Background design matching WelcomeScreen
           Container(
-            color: Colors.white, // Set body background to white
+            color: Colors.white,
           ),
-
           // Background design with circles
           Positioned(
             top: -100,
@@ -82,11 +98,10 @@ class _HomeScreenState extends State<HomeScreen> {
                   padding: const EdgeInsets.all(20),
                   child: Text(
                     '$greeting, ${user?.displayName ?? 'User'}!',
-                    style: TextStyle(
+                    style: const TextStyle(
                       fontSize: 22,
                       fontWeight: FontWeight.bold,
-                      color:
-                          Colors.black, // Change to black for text visibility
+                      color: Colors.black,
                     ),
                   ),
                 ),
@@ -103,14 +118,9 @@ class _HomeScreenState extends State<HomeScreen> {
                               _currentIndex = index;
                             });
                           },
-                          labelColor: Theme.of(context)
-                              .colorScheme
-                              .primary, // Label color
-                          unselectedLabelColor:
-                              Colors.grey, // Unselected label color
-                          indicatorColor: Theme.of(context)
-                              .colorScheme
-                              .primary, // Indicator color
+                          labelColor: Theme.of(context).colorScheme.primary,
+                          unselectedLabelColor: Colors.grey,
+                          indicatorColor: Theme.of(context).colorScheme.primary,
                           tabs: const [
                             Tab(text: 'Stock Overview'),
                             Tab(text: 'Trending Stocks'),
@@ -125,6 +135,10 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ),
         ],
+      ),
+      bottomNavigationBar: BottomNavBar(
+        currentIndex: 0, // Home is the first tab
+        onTabSelected: (index) => _onTabSelected(context, index),
       ),
     );
   }

@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:stocktrackerapp/widgets/app_drawer.dart';
 import 'package:stocktrackerapp/widgets/bottom_nav_bar.dart';
 import 'package:stocktrackerapp/widgets/custom_app_bar.dart';
+import 'package:stocktrackerapp/widgets/app_drawer.dart';
 
-class PortfolioScreen extends StatelessWidget {
-  const PortfolioScreen({Key? key}) : super(key: key);
+class NewsfeedScreen extends StatelessWidget {
+  const NewsfeedScreen({Key? key}) : super(key: key);
 
   void _onTabSelected(BuildContext context, int index) {
     switch (index) {
@@ -26,13 +26,16 @@ class PortfolioScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: const CustomAppBar(title: 'Portfolio'),
+      appBar: const CustomAppBar(title: 'Newsfeed'),
       drawer: AppDrawer(),
       body: const Center(
-        child: Text('Portfolio Screen Content'),
+        child: Text(
+          'Newsfeed Screen Content',
+          style: TextStyle(fontSize: 18),
+        ),
       ),
       bottomNavigationBar: BottomNavBar(
-        currentIndex: 1,
+        currentIndex: 3,
         onTabSelected: (index) => _onTabSelected(context, index),
       ),
     );
