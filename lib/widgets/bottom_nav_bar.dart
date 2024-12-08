@@ -35,6 +35,15 @@ class BottomNavBar extends StatelessWidget {
       ],
       selectedItemColor: Theme.of(context).colorScheme.primary,
       unselectedItemColor: Colors.grey,
+      showSelectedLabels: true, // Ensure selected labels are visible
+      showUnselectedLabels: true, // Ensure unselected labels are visible
+      selectedLabelStyle: TextStyle(
+        fontWeight: FontWeight.bold,
+        color: Theme.of(context).colorScheme.primary,
+      ),
+      unselectedLabelStyle: TextStyle(
+        color: Colors.grey,
+      ),
     );
   }
 }
