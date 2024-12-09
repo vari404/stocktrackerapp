@@ -69,3 +69,9 @@ lib/
 │   ├── app_drawer.dart                # Reusable app drawer widget. (NEW)
 │   ├── loading_indicator.dart         # Common loading spinner.
 │   ├── error_widget.dart              # Error handling UI component.
+
+
+
+Issues
+
+I had hard time to fetch the trending stocks because all the stocks are not trended, I had to retreive first the symbols name then filter all of them to find which on is trending and displays them and because it was a lot information to process from api the app took forever to load 
