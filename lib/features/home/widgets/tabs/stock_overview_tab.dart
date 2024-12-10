@@ -1,8 +1,6 @@
-import 'dart:async';
-import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:stocktrackerapp/services/stock_overview_api_service.dart';
 import 'package:stocktrackerapp/features/home/widgets/stock_card.dart';
+import 'package:stocktrackerapp/services/stock_overview_api_service.dart';
 
 class StockOverviewTab extends StatefulWidget {
   const StockOverviewTab({Key? key}) : super(key: key);
@@ -11,127 +9,73 @@ class StockOverviewTab extends StatefulWidget {
   _StockOverviewTabState createState() => _StockOverviewTabState();
 }
 
-class _StockOverviewTabState extends State<StockOverviewTab>
-    with SingleTickerProviderStateMixin {
+class _StockOverviewTabState extends State<StockOverviewTab> {
   final StockOverviewApiService _apiService = StockOverviewApiService();
-  final List<Map<String, dynamic>> _stocks = [];
-  final StreamController<Map<String, dynamic>> _realTimeStreamController =
-      StreamController.broadcast();
-
-  late StreamSubscription _webSocketSubscription;
-  late TabController _tabController;
+  late Stream<Map<String, Map<String, dynamic>>> _stockStream;
+  final Map<String, Map<String, dynamic>> _stockData = {};
+  String _searchQuery = '';
 
   @override
   void initState() {
     super.initState();
-    _tabController =
-        TabController(length: 2, vsync: this); // Ensure matching tab count
-    _loadStocks();
-  }
-
-  @override
-  void dispose() {
-    _realTimeStreamController.close();
-    _webSocketSubscription.cancel();
-    _tabController.dispose();
-    super.dispose();
-  }
-
-  void _loadStocks() async {
-    final symbols = ['AAPL', 'GOOGL', 'MSFT']; // Example symbols
-
-    for (var symbol in symbols) {
-      try {
-        final financials = await _apiService.fetchBasicFinancials(symbol);
-        final price = financials['metric']['lastPrice'] ?? 0.0;
-        final changePercent = financials['metric']['percentChange'] ?? 0.0;
-        final historicalData = await _apiService.fetchStockCandleData(symbol);
-
-        setState(() {
-          _stocks.add({
-            'symbol': symbol,
-            'companyName': financials['symbol'],
-            'price': price,
-            'changePercent': changePercent,
-            'historicalData': historicalData,
-          });
-        });
-
-        _startRealTimeUpdates(symbol);
-      } catch (e) {
-        debugPrint("Error fetching data for $symbol: $e");
-      }
-    }
-  }
-
-  void _startRealTimeUpdates(String symbol) {
-    final channel = _apiService.connectRealTimeTrades(symbol);
-
-    _webSocketSubscription = channel.stream.listen((message) {
-      final data = jsonDecode(message);
-
-      if (data['type'] == 'trade' && data['data'] != null) {
-        final updates = data['data'];
-
-        for (var update in updates) {
-          if (update['s'] == symbol) {
-            _realTimeStreamController.add({
-              'symbol': symbol,
-              'price': update['p'],
-              'volume': update['v'],
-            });
-          }
-        }
-      }
+    _stockStream = _apiService
+        .connectRealTimeUpdates(["AAPL", "GOOGL", "AMZN"]); // Example symbols
+    _stockStream.listen((data) {
+      setState(() {
+        _stockData.addAll(data);
+      });
     });
   }
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text("Stock Overview"),
-        bottom: TabBar(
-          controller: _tabController,
-          tabs: const [
-            Tab(text: "Stocks"),
-            Tab(text: "Charts"),
-          ],
-        ),
-      ),
-      body: TabBarView(
-        controller: _tabController,
-        children: [
-          StreamBuilder<Map<String, dynamic>>(
-            stream: _realTimeStreamController.stream,
-            builder: (context, snapshot) {
-              if (snapshot.hasData) {
-                final update = snapshot.data!;
-                final index = _stocks
-                    .indexWhere((stock) => stock['symbol'] == update['symbol']);
-                if (index != -1) {
-                  _stocks[index]['price'] = update['price'];
-                }
-              }
+  void dispose() {
+    _apiService.closeWebSocketConnection();
+    super.dispose();
+  }
 
-              return ListView.builder(
-                itemCount: _stocks.length,
-                itemBuilder: (context, index) {
-                  final stock = _stocks[index];
-                  return StockCard(
-                    symbol: stock['symbol'],
-                    companyName: stock['companyName'],
-                    price: stock['price'],
-                    changePercent: stock['changePercent'],
-                    historicalData: stock['historicalData'],
-                  );
-                },
-              );
+  @override
+  Widget build(BuildContext context) {
+    final filteredStocks = _stockData.values
+        .where((stock) => stock['symbol']
+            .toString()
+            .toLowerCase()
+            .contains(_searchQuery.toLowerCase()))
+        .toList();
+
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: TextField(
+            decoration: InputDecoration(
+              labelText: 'Search Stocks',
+              border: OutlineInputBorder(),
+              suffixIcon: Icon(Icons.search),
+            ),
+            onChanged: (query) {
+              setState(() {
+                _searchQuery = query;
+              });
             },
           ),
-          const Center(child: Text("Charts View (Optional placeholder)")),
-        ],
-      ),
+        ),
+        Expanded(
+          child: filteredStocks.isEmpty
+              ? const Center(child: CircularProgressIndicator())
+              : ListView.builder(
+                  itemCount: filteredStocks.length,
+                  itemBuilder: (context, index) {
+                    final stock = filteredStocks[index];
+                    return StockCard(
+                      symbol: stock['symbol'] as String,
+                      price: stock['price'] as double,
+                      change: stock['change'] as double,
+                      volume: stock['volume'] as int,
+                    );
+                  },
+                ),
+        ),
+      ],
     );
   }
 }
