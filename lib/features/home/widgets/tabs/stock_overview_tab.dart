@@ -17,7 +17,7 @@ class _StockOverviewTabState extends State<StockOverviewTab> with SingleTickerPr
   final StreamController<Map<String, dynamic>> _realTimeStreamController = StreamController.broadcast();
   late TabController _tabController;
 
-  // We'll store multiple subscriptions here if we subscribe to multiple symbols.
+  // Store all subscriptions for multiple symbols if needed
   final List<StreamSubscription> _subscriptions = [];
 
   @override
@@ -29,7 +29,6 @@ class _StockOverviewTabState extends State<StockOverviewTab> with SingleTickerPr
 
   @override
   void dispose() {
-    // Cancel all subscriptions
     for (var sub in _subscriptions) {
       sub.cancel();
     }
@@ -41,29 +40,28 @@ class _StockOverviewTabState extends State<StockOverviewTab> with SingleTickerPr
   }
 
   void _loadStocks() async {
-    // Just a few example symbols to test
+    // Some example symbols:
     final symbols = ['AAPL', 'GOOGL', 'MSFT'];
 
     for (var symbol in symbols) {
       try {
-        final financials = await _apiService.fetchBasicFinancials(symbol);
+        // Fetch quote data for price and percent change
+        final quoteData = await _apiService.fetchQuote(symbol);
+        debugPrint('Quote for $symbol: $quoteData');
 
-        // Print the fetched financials for troubleshooting
-        debugPrint("Financials for $symbol: $financials");
+        final price = quoteData['c'] ?? 0.0;
+        final percentChange = quoteData['dp'] ?? 0.0;
 
-        // Adjust keys if needed based on what your API returns
-        final price = (financials['metric']?['lastPrice'] ?? 0.0) as double;
-        final changePercent = (financials['metric']?['percentChange'] ?? 0.0) as double;
+        // Fetch candle data for historical info
         final historicalData = await _apiService.fetchStockCandleData(symbol);
-
-        debugPrint("Historical data for $symbol: $historicalData");
+        debugPrint('Candle data for $symbol: $historicalData');
 
         setState(() {
           _stocks.add({
             'symbol': symbol,
-            'companyName': financials['symbol'] ?? symbol,
+            'companyName': symbol, // Replace with a proper name if needed
             'price': price,
-            'changePercent': changePercent,
+            'changePercent': percentChange,
             'historicalData': historicalData,
           });
         });
@@ -78,9 +76,7 @@ class _StockOverviewTabState extends State<StockOverviewTab> with SingleTickerPr
   void _startRealTimeUpdates(String symbol) {
     final channel = _apiService.connectRealTimeTrades(symbol);
 
-    // Listen to the WebSocket stream for real-time updates
     final subscription = channel.stream.listen((rawEvent) {
-      // If the incoming data is a string, decode it
       final data = rawEvent is String ? jsonDecode(rawEvent) : rawEvent;
 
       if (data['type'] == 'trade' && data['data'] != null) {
@@ -156,4 +152,3 @@ class _StockOverviewTabState extends State<StockOverviewTab> with SingleTickerPr
     );
   }
 }
-
