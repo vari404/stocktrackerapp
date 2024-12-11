@@ -8,49 +8,60 @@ class StockOverviewTab extends StatefulWidget {
   const StockOverviewTab({Key? key}) : super(key: key);
 
   @override
-  _StockOverviewTabState createState() => _StockOverviewTabState();
+  State<StockOverviewTab> createState() => _StockOverviewTabState();
 }
 
-class _StockOverviewTabState extends State<StockOverviewTab>
-    with SingleTickerProviderStateMixin {
+class _StockOverviewTabState extends State<StockOverviewTab> with SingleTickerProviderStateMixin {
   final StockOverviewApiService _apiService = StockOverviewApiService();
   final List<Map<String, dynamic>> _stocks = [];
-  final StreamController<Map<String, dynamic>> _realTimeStreamController =
-      StreamController.broadcast();
-
-  late StreamSubscription _webSocketSubscription;
+  final StreamController<Map<String, dynamic>> _realTimeStreamController = StreamController.broadcast();
   late TabController _tabController;
+
+  // We'll store multiple subscriptions here if we subscribe to multiple symbols.
+  final List<StreamSubscription> _subscriptions = [];
 
   @override
   void initState() {
     super.initState();
-    _tabController =
-        TabController(length: 2, vsync: this); // Ensure matching tab count
+    _tabController = TabController(length: 2, vsync: this);
     _loadStocks();
   }
 
   @override
   void dispose() {
+    // Cancel all subscriptions
+    for (var sub in _subscriptions) {
+      sub.cancel();
+    }
+    _subscriptions.clear();
+
     _realTimeStreamController.close();
-    _webSocketSubscription.cancel();
     _tabController.dispose();
     super.dispose();
   }
 
   void _loadStocks() async {
-    final symbols = ['AAPL', 'GOOGL', 'MSFT']; // Example symbols
+    // Just a few example symbols to test
+    final symbols = ['AAPL', 'GOOGL', 'MSFT'];
 
     for (var symbol in symbols) {
       try {
         final financials = await _apiService.fetchBasicFinancials(symbol);
-        final price = financials['metric']['lastPrice'] ?? 0.0;
-        final changePercent = financials['metric']['percentChange'] ?? 0.0;
+
+        // Print the fetched financials for troubleshooting
+        debugPrint("Financials for $symbol: $financials");
+
+        // Adjust keys if needed based on what your API returns
+        final price = (financials['metric']?['lastPrice'] ?? 0.0) as double;
+        final changePercent = (financials['metric']?['percentChange'] ?? 0.0) as double;
         final historicalData = await _apiService.fetchStockCandleData(symbol);
+
+        debugPrint("Historical data for $symbol: $historicalData");
 
         setState(() {
           _stocks.add({
             'symbol': symbol,
-            'companyName': financials['symbol'],
+            'companyName': financials['symbol'] ?? symbol,
             'price': price,
             'changePercent': changePercent,
             'historicalData': historicalData,
@@ -67,12 +78,13 @@ class _StockOverviewTabState extends State<StockOverviewTab>
   void _startRealTimeUpdates(String symbol) {
     final channel = _apiService.connectRealTimeTrades(symbol);
 
-    _webSocketSubscription = channel.stream.listen((message) {
-      final data = jsonDecode(message);
+    // Listen to the WebSocket stream for real-time updates
+    final subscription = channel.stream.listen((rawEvent) {
+      // If the incoming data is a string, decode it
+      final data = rawEvent is String ? jsonDecode(rawEvent) : rawEvent;
 
       if (data['type'] == 'trade' && data['data'] != null) {
         final updates = data['data'];
-
         for (var update in updates) {
           if (update['s'] == symbol) {
             _realTimeStreamController.add({
@@ -83,7 +95,11 @@ class _StockOverviewTabState extends State<StockOverviewTab>
           }
         }
       }
+    }, onError: (error) {
+      debugPrint("WebSocket error for $symbol: $error");
     });
+
+    _subscriptions.add(subscription);
   }
 
   @override
@@ -107,11 +123,16 @@ class _StockOverviewTabState extends State<StockOverviewTab>
             builder: (context, snapshot) {
               if (snapshot.hasData) {
                 final update = snapshot.data!;
-                final index = _stocks
-                    .indexWhere((stock) => stock['symbol'] == update['symbol']);
+                final index = _stocks.indexWhere((stock) => stock['symbol'] == update['symbol']);
                 if (index != -1) {
-                  _stocks[index]['price'] = update['price'];
+                  setState(() {
+                    _stocks[index]['price'] = update['price'];
+                  });
                 }
+              }
+
+              if (_stocks.isEmpty) {
+                return const Center(child: Text("No stocks available or still loading..."));
               }
 
               return ListView.builder(
@@ -135,3 +156,4 @@ class _StockOverviewTabState extends State<StockOverviewTab>
     );
   }
 }
+
