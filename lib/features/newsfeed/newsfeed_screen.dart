@@ -27,13 +27,11 @@ class _NewsfeedScreenState extends State<NewsfeedScreen> {
       case 0:
         Navigator.pushReplacementNamed(context, '/home');
         break;
+
       case 1:
-        Navigator.pushReplacementNamed(context, '/portfolio');
-        break;
-      case 2:
         Navigator.pushReplacementNamed(context, '/watchlist');
         break;
-      case 3:
+      case 2:
         Navigator.pushReplacementNamed(context, '/newsfeed');
         break;
     }
@@ -72,7 +70,7 @@ class _NewsfeedScreenState extends State<NewsfeedScreen> {
         },
       ),
       bottomNavigationBar: BottomNavBar(
-        currentIndex: 3,
+        currentIndex: 2,
         onTabSelected: (index) => _onTabSelected(context, index),
       ),
     );

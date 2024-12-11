@@ -21,11 +21,7 @@ class BottomNavBar extends StatelessWidget {
           label: 'Home',
         ),
         BottomNavigationBarItem(
-          icon: Icon(Icons.pie_chart),
-          label: 'Portfolio',
-        ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.watch_later),
+          icon: Icon(Icons.favorite),
           label: 'Watchlist',
         ),
         BottomNavigationBarItem(

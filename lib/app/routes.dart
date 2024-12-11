@@ -17,8 +17,7 @@ class Routes {
         return MaterialPageRoute(builder: (_) => const WelcomeScreen());
       case '/home':
         return MaterialPageRoute(builder: (_) => const HomeScreen());
-      case '/portfolio':
-        return MaterialPageRoute(builder: (_) => const PortfolioScreen());
+
       case '/watchlist':
         return MaterialPageRoute(builder: (_) => const WatchlistScreen());
       case '/newsfeed':

@@ -3,7 +3,7 @@ import 'package:http/http.dart' as http;
 import 'package:web_socket_channel/web_socket_channel.dart';
 
 class TrendingStocksApiService {
-  static const String _apiKey = "ct318m9r01qkff71167gct318m9r01qkff711680";
+  static const String _apiKey = "ctcf6d1r01qjor98f3hgctcf6d1r01qjor98f3i0";
   static const String _baseUrl = "https://finnhub.io/api/v1";
   WebSocketChannel? _webSocketChannel;
 

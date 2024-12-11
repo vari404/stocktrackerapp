@@ -1,12 +1,20 @@
-import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart'; // Import Provider package
+import 'package:firebase_core/firebase_core.dart'; // Import Firebase Core package
 import 'package:stocktrackerapp/app/routes.dart';
 import 'package:stocktrackerapp/themes/theme_provider.dart';
+import 'package:stocktrackerapp/services/stocks_api_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(); // Initialize Firebase
+
+  // Initialize Firebase before anything else
+  await Firebase.initializeApp(); // Add Firebase initialization here
+
+  // After Firebase is initialized, you can now safely call syncStockSymbols
+  final stocksApiService = StocksApiService();
+  await stocksApiService
+      .syncStockSymbols('US'); // Sync stock symbols on startup
 
   runApp(
     ChangeNotifierProvider(

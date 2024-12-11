@@ -5,6 +5,7 @@ class StockCard extends StatelessWidget {
   final double price;
   final double change;
   final int volume;
+  final VoidCallback onTap; // Add onTap callback
 
   const StockCard({
     Key? key,
@@ -12,6 +13,7 @@ class StockCard extends StatelessWidget {
     required this.price,
     required this.change,
     required this.volume,
+    required this.onTap, // Receive onTap callback
   }) : super(key: key);
 
   @override
@@ -21,6 +23,7 @@ class StockCard extends StatelessWidget {
     return Card(
       margin: const EdgeInsets.all(8.0),
       child: ListTile(
+        onTap: onTap, // Call the onTap callback
         title:
             Text(symbol, style: const TextStyle(fontWeight: FontWeight.bold)),
         subtitle: Column(

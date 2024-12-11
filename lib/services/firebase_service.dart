@@ -2,9 +2,11 @@ import 'dart:async';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:stocktrackerapp/models/stock_model.dart';
 
 class FirebaseService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   /// Polls for email verification status and updates Firestore once verified
   Future<void> waitForEmailVerificationAndUpdateFirestore(
@@ -203,5 +205,76 @@ class FirebaseService {
     }
 
     return null;
+  }
+
+  Future<void> addToWatchlist(String symbol) async {
+    final user = _auth.currentUser;
+    if (user == null) return;
+
+    final docRef = _firestore
+        .collection('users')
+        .doc(user.uid)
+        .collection('watchlist')
+        .doc(symbol);
+
+    await docRef.set({'symbol': symbol});
+  }
+
+  Future<void> removeFromWatchlist(String symbol) async {
+    final user = _auth.currentUser;
+    if (user == null) return;
+
+    final docRef = _firestore
+        .collection('users')
+        .doc(user.uid)
+        .collection('watchlist')
+        .doc(symbol);
+
+    await docRef.delete();
+  }
+
+  Future<bool> isSymbolInWatchlist(String symbol) async {
+    final user = _auth.currentUser;
+    if (user == null) return false;
+
+    final docRef = _firestore
+        .collection('users')
+        .doc(user.uid)
+        .collection('watchlist')
+        .doc(symbol);
+
+    final doc = await docRef.get();
+    return doc.exists;
+  }
+
+  // Get the currently logged-in user
+  User? getUser() {
+    return _auth.currentUser;
+  }
+
+  // Get the user's watchlist from Firestore
+  Future<List<String>> getUserWatchlist() async {
+    final user = getUser();
+    if (user == null) {
+      throw Exception("No user is currently logged in.");
+    }
+
+    final watchlistSnapshot = await _firestore
+        .collection('users')
+        .doc(user.uid)
+        .collection('watchlist')
+        .get();
+
+    return watchlistSnapshot.docs
+        .map((doc) => doc.data()['symbol'] as String)
+        .toList();
+  }
+
+  // Firestore listener to track real-time changes in the 'stocks' collection
+  Stream<List<Stock>> getStocksStream() {
+    return _firestore.collection('stocks').snapshots().map((snapshot) =>
+        snapshot.docs
+            .map((doc) => Stock.fromJson(doc.data() as Map<String, dynamic>))
+            .toList());
   }
 }
