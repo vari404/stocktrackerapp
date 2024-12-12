@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'package:stocktrackerapp/widgets/app_drawer.dart';
+import 'package:stocktrackerapp/widgets/custom_app_bar.dart';
 
 class TrendingStocksTabDetails extends StatelessWidget {
   final String symbol;
@@ -22,20 +24,28 @@ class TrendingStocksTabDetails extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text('$symbol Recommendations'),
+      appBar: CustomAppBar(
+        title: '$symbol Recommendations',
       ),
+      drawer: AppDrawer(),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Title above the chart
-            Text(
-              '$symbol Recommendation Trends',
-              style: Theme.of(context)
-                  .textTheme
-                  .headlineMedium, // Updated to 'headlineMedium'
+            // Back icon
+            Row(
+              children: [
+                GestureDetector(
+                  onTap: () {
+                    Navigator.pop(context);
+                  },
+                  child: Icon(
+                    Icons.arrow_back,
+                    color: Theme.of(context).primaryColor,
+                  ),
+                ),
+              ],
             ),
             const SizedBox(height: 16.0),
 

@@ -79,3 +79,11 @@ I had hard time to fetch the trending stocks because all the stocks are not tren
 for some reason the wifi won't run https://finnhub.io/docs/api but when I used my phone data it worked.
 
 The US stock market opens at 9:30 am ET and closes at 4:00 pm ET, Monday through Friday. It's closed on the weekends.
+
+
+
+1. Retrieve All Stock Symbols Dynamically
+Instead of fetching the symbols statically and storing them in _symbols, you can use a Firestore Stream to listen for real-time updates. This ensures the UI reflects any changes in the Firestore collection.
+
+2. Search Firestore Dynamically
+Update the search functionality to query Firestore directly based on the search input rather than filtering from the preloaded _symbols list.
