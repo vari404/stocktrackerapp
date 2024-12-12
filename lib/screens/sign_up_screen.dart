@@ -50,8 +50,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
             .set({
           'email': emailController.text.trim(),
           'name': nameController.text.trim(),
-          'createdAt': FieldValue
-              .serverTimestamp(), // Optional: Store creation timestamp
+          'createdAt': FieldValue.serverTimestamp(),
         });
 
         // Successfully signed up
@@ -66,18 +65,16 @@ class _SignUpScreenState extends State<SignUpScreen> {
         } else {
           message = 'Sign up failed, please try again.';
         }
-        // Create a SnackBar with the background color from WelcomeScreen
+
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(message),
-            backgroundColor: Theme.of(context)
-                .colorScheme
-                .primary, // Use primary color from WelcomeScreen
+            backgroundColor: Theme.of(context).colorScheme.primary,
           ),
         );
       } finally {
         setState(() {
-          signUpRequired = false; // Reset loading state
+          signUpRequired = false;
         });
       }
     }
@@ -94,7 +91,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
             child: Column(
               children: [
                 Image.asset('lib/assets/images/logo.png', height: 180),
-                const SizedBox(height: 30),
+                const SizedBox(height: 20),
                 Card(
                   elevation: 2,
                   shape: RoundedRectangleBorder(
@@ -187,6 +184,15 @@ class _SignUpScreenState extends State<SignUpScreen> {
                       },
                       validator: (val) {
                         if (val!.isEmpty) return 'Please fill in this field';
+                        if (!contains8Length)
+                          return 'Must be at least 8 characters';
+                        if (!containsUpperCase)
+                          return 'Must contain an uppercase letter';
+                        if (!containsLowerCase)
+                          return 'Must contain a lowercase letter';
+                        if (!containsNumber) return 'Must contain a number';
+                        if (!containsSpecialChar)
+                          return 'Must contain a special character';
                         return null;
                       },
                     ),
@@ -204,7 +210,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                     PasswordCriteria(contains8Length, '8+ Characters'),
                   ],
                 ),
-                const SizedBox(height: 20), // Adjust spacing if needed
+                const SizedBox(height: 20),
                 if (!signUpRequired)
                   ElevatedButton(
                     onPressed: _signUp,
@@ -213,15 +219,11 @@ class _SignUpScreenState extends State<SignUpScreen> {
                         borderRadius: BorderRadius.circular(60),
                       ),
                       minimumSize: const Size(150, 40),
-                      backgroundColor: Theme.of(context)
-                          .colorScheme
-                          .primary, // Match app background color
+                      backgroundColor: Theme.of(context).colorScheme.primary,
                     ),
                     child: const Text(
                       'Sign Up',
-                      style: TextStyle(
-                          fontSize: 16,
-                          color: Colors.white), // Set text color to white
+                      style: TextStyle(fontSize: 16, color: Colors.white),
                     ),
                   )
                 else
@@ -250,9 +252,7 @@ class PasswordCriteria extends StatelessWidget {
           isValid
               ? CupertinoIcons.check_mark_circled_solid
               : CupertinoIcons.circle,
-          color: isValid
-              ? Theme.of(context).colorScheme.primary
-              : Colors.grey, // Match app background color
+          color: isValid ? Theme.of(context).colorScheme.primary : Colors.grey,
         ),
         const SizedBox(width: 4),
         Text(label),
