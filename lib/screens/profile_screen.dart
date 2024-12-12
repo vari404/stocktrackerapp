@@ -53,13 +53,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
       case 0:
         Navigator.pushReplacementNamed(context, '/home');
         break;
+
       case 1:
-        Navigator.pushReplacementNamed(context, '/portfolio');
-        break;
-      case 2:
         Navigator.pushReplacementNamed(context, '/watchlist');
         break;
-      case 3:
+      case 2:
         Navigator.pushReplacementNamed(context, '/newsfeed');
         break;
     }

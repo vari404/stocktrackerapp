@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:stocktrackerapp/features/home/widgets/stock_card.dart';
-import 'package:stocktrackerapp/services/stock_overview_api_service.dart';
 import 'package:stocktrackerapp/features/home/widgets/tabs/stock_overview_details.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:stocktrackerapp/services/stocks_api_service.dart';
+import 'package:stocktrackerapp/services/stock_overview_api_service.dart';
 
 class StockOverviewTab extends StatefulWidget {
   const StockOverviewTab({Key? key}) : super(key: key);
@@ -12,7 +12,9 @@ class StockOverviewTab extends StatefulWidget {
 }
 
 class _StockOverviewTabState extends State<StockOverviewTab> {
+  final StocksApiService _stocksApiService = StocksApiService();
   final StockOverviewApiService _apiService = StockOverviewApiService();
+
   late Stream<Map<String, Map<String, dynamic>>> _stockStream;
   final Map<String, Map<String, dynamic>> _stockData = {};
   List<String> _symbols = [];
@@ -22,38 +24,35 @@ class _StockOverviewTabState extends State<StockOverviewTab> {
   @override
   void initState() {
     super.initState();
-    _fetchStockSymbols();
+    _initializeStocks();
   }
 
-  Future<void> _fetchStockSymbols() async {
+  Future<void> _initializeStocks() async {
     try {
-      // Fetch stock symbols from Firestore
-      final snapshot =
-          await FirebaseFirestore.instance.collection('stocks').get();
-      final symbols = snapshot.docs.map((doc) => doc.id).toList();
+      final allSymbols = await _stocksApiService.getStockSymbols();
 
-      if (symbols.isNotEmpty) {
+      if (allSymbols.isNotEmpty) {
         setState(() {
-          _symbols = symbols;
-          _filteredSymbols = symbols; // Initially display all symbols
+          _symbols = allSymbols;
+          _filteredSymbols = allSymbols; // Initially display all symbols
         });
 
         // Start the WebSocket connection
-        _stockStream = _apiService.connectRealTimeUpdates(symbols);
+        _stockStream = _apiService.connectRealTimeUpdates(_symbols);
         _stockStream.listen((data) {
           setState(() {
             _stockData.addAll(data);
           });
         });
       } else {
-        // Handle empty symbols case
+        // Handle the case where no symbols are found
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('No stock symbols found in Firestore.')),
         );
       }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error fetching stock symbols: $e')),
+        SnackBar(content: Text('Error initializing stocks: $e')),
       );
     }
   }

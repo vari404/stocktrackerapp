@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:stocktrackerapp/features/home/home_screen.dart';
-import 'package:stocktrackerapp/features/portfolio/portfolio_screen.dart';
 import 'package:stocktrackerapp/features/watchlist/watchlist_screen.dart';
 import 'package:stocktrackerapp/features/newsfeed/newsfeed_screen.dart';
 import 'package:stocktrackerapp/screens/forgot_password_screen.dart';

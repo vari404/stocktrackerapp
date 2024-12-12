@@ -1,47 +1,181 @@
-import 'dart:convert';
-import 'package:http/http.dart' as http;
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:stocktrackerapp/models/stock_model.dart';
 
 class StocksApiService {
-  final String apiKey = 'ctcf6d1r01qjor98f3hgctcf6d1r01qjor98f3i0';
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
-  // Fetch stock symbols from Finnhub API
-  Future<List<Stock>> fetchStockSymbols(String exchange) async {
-    final url =
-        'https://finnhub.io/api/v1/stock/symbol?exchange=$exchange&token=$apiKey';
-    final response = await http.get(Uri.parse(url));
-
-    if (response.statusCode == 200) {
-      final List<dynamic> data = json.decode(response.body);
-      return data.map((symbolData) => Stock.fromJson(symbolData)).toList();
-    } else {
-      throw Exception('Failed to load stock symbols');
-    }
-  }
-
-  // Add or update a stock symbol in Firestore
-  Future<void> addStockSymbol(Stock stock) async {
-    final stocksRef = _firestore.collection('stocks');
-
-    // Check if symbol already exists
-    final docSnapshot = await stocksRef.doc(stock.symbol).get();
-
-    if (!docSnapshot.exists) {
-      await stocksRef.doc(stock.symbol).set(stock.toMap());
-    }
-  }
-
-  // Sync stock symbols to Firestore from API
-  Future<void> syncStockSymbols(String exchange) async {
+  // Add frequently accessed stocks manually to Firestore
+  Future<void> addFrequentlyAccessedStocks(List<String> symbols) async {
     try {
-      final stockSymbols = await fetchStockSymbols(exchange);
-      for (var stock in stockSymbols) {
-        await addStockSymbol(stock);
+      final stocksRef = _firestore.collection('stocks');
+      final batch = _firestore.batch();
+
+      for (var symbol in symbols) {
+        final docRef = stocksRef.doc(symbol);
+        batch.set(docRef, {'symbol': symbol}); // Store only the symbol
+      }
+
+      await batch.commit();
+      print('Frequently accessed stocks added successfully.');
+    } catch (e) {
+      print('Error adding frequently accessed stocks: $e');
+    }
+  }
+
+  // Static method to initialize frequently accessed stocks
+  static Future<void> initializeFrequentlyAccessedStocks() async {
+    final stocksApiService = StocksApiService();
+    final frequentlyAccessedStocks = [
+      'AAPL',
+      'MSFT',
+      'GOOGL',
+      'AMZN',
+      'TSLA',
+      'META',
+      'NFLX',
+      'NVDA',
+      'ADBE',
+      'INTC',
+      'JPM',
+      'V',
+      'NVDA',
+      'DIS',
+      'PYPL',
+      'BA',
+      'GS',
+      'WMT',
+      'KO',
+      'IBM',
+      'SBUX',
+      'TWTR',
+      'BABA',
+      'CSCO',
+      'NKE',
+      'PEP',
+      'GE',
+      'XOM',
+      'MCD',
+      'HSBC',
+      'UNH',
+      'CVX',
+      'HD',
+      'INTU',
+      'CRM',
+      'ORCL',
+      'T',
+      'LMT',
+      'CAT',
+      'MMM',
+      'GE',
+      'HON',
+      'AMGN',
+      'BMY',
+      'ABBV',
+      'GILD',
+      'F',
+      'FISV',
+      'MU',
+      'TXN',
+      'QCOM',
+      'ATVI',
+      'GM',
+      'ZTS',
+      'MDT',
+      'LOW',
+      'CVS',
+      'PM',
+      'NOK',
+      'LRCX',
+      'VZ',
+      'PLD',
+      'NEE',
+      'MELI',
+      'MSI',
+      'FIS',
+      'TMO',
+      'AIG',
+      'SYK',
+      'APD',
+      'SPGI',
+      'AXP',
+      'SNY',
+      'COP',
+      'DE',
+      'ISRG',
+      'DHR',
+      'CHTR',
+      'REGN',
+      'ADP',
+      'AMT',
+      'EQIX',
+      'CSX',
+      'VLO',
+      'EBAY',
+      'MRK',
+      'WBA',
+      'BDX',
+      'SYF',
+      'XEL',
+      'KMB',
+      'USB',
+      'ICE',
+      'C',
+      'PFE',
+      'MTCH',
+      'ADSK',
+      'VTRS',
+      'VRTX',
+      'ALL',
+      'CSGP',
+      'IQV',
+      'DOW',
+      'RMD',
+      'CL',
+      'MMC',
+      'LUV',
+      'TMUS',
+      'TJX',
+      'SWKS',
+      'FTNT',
+      'IDXX',
+      'ALGN',
+      'UAL',
+      'RCL',
+      'CB',
+      'MSCI',
+      'ZBH',
+      'STZ',
+      'CHD',
+      'MDLZ',
+      'TGT',
+      'RDS.A',
+      'DISCK',
+      'WFC',
+      'ZION',
+      'MKC',
+      'COF',
+      'EXC',
+      'KMI',
+      'HCA',
+      'MET'
+    ]; // 100 symbols
+
+    await stocksApiService
+        .addFrequentlyAccessedStocks(frequentlyAccessedStocks);
+  }
+
+  // Fetch stock symbols from Firestore
+  Future<List<String>> getStockSymbols() async {
+    try {
+      final stocksCollection = _firestore.collection('stocks');
+      final snapshot = await stocksCollection.get();
+
+      if (snapshot.docs.isNotEmpty) {
+        return snapshot.docs.map((doc) => doc.id).toList();
+      } else {
+        return []; // Return an empty list if no documents are found
       }
     } catch (e) {
-      print('Error syncing stock symbols: $e');
+      throw Exception('Error fetching stock symbols: $e');
     }
   }
 }

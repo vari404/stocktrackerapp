@@ -2,7 +2,6 @@ import 'dart:async';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:stocktrackerapp/models/stock_model.dart';
 
 class FirebaseService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
@@ -270,11 +269,11 @@ class FirebaseService {
         .toList();
   }
 
-  // Firestore listener to track real-time changes in the 'stocks' collection
-  Stream<List<Stock>> getStocksStream() {
-    return _firestore.collection('stocks').snapshots().map((snapshot) =>
-        snapshot.docs
-            .map((doc) => Stock.fromJson(doc.data() as Map<String, dynamic>))
-            .toList());
+  // Stream stock symbols
+  Stream<List<String>> getStocksStream() {
+    return _firestore
+        .collection('stocks')
+        .snapshots()
+        .map((snapshot) => snapshot.docs.map((doc) => doc.id).toList());
   }
 }

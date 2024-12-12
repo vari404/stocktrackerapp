@@ -77,3 +77,5 @@ Issues
 I had hard time to fetch the trending stocks because all the stocks are not trended, I had to retreive first the symbols name then filter all of them to find which on is trending and displays them and because it was a lot information to process from api the app took forever to load.
 
 for some reason the wifi won't run https://finnhub.io/docs/api but when I used my phone data it worked.
+
+The US stock market opens at 9:30 am ET and closes at 4:00 pm ET, Monday through Friday. It's closed on the weekends.

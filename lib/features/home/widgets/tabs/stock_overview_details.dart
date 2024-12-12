@@ -215,58 +215,69 @@ class _StockOverviewDetailsState extends State<StockOverviewDetails> {
                           elevation: 2,
                           child: Padding(
                             padding: const EdgeInsets.all(16.0),
-                            child: Row(
-                              crossAxisAlignment: CrossAxisAlignment.start,
+                            child: Stack(
                               children: [
-                                if (_companyProfile['logo'] != null)
-                                  SizedBox(
-                                    height: 100,
-                                    width: 100,
-                                    child: Image.network(
-                                      _companyProfile['logo'],
-                                      fit: BoxFit.contain,
-                                    ),
-                                  ),
-                                const SizedBox(width: 16),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                          "Name: ${_companyProfile['name'] ?? 'N/A'}"),
-                                      Text(
-                                          "Industry: ${_companyProfile['finnhubIndustry'] ?? 'N/A'}"),
-                                      Text(
-                                          "Market Cap: \$${_companyProfile['marketCapitalization'] ?? 'N/A'}B"),
-                                      Text(
-                                          "IPO Date: ${_companyProfile['ipo'] ?? 'N/A'}"),
-                                      if (_companyProfile['weburl'] != null)
-                                        GestureDetector(
-                                          onTap: () => _openWebsite(
-                                              _companyProfile['weburl']),
-                                          child: Text(
-                                            "Website: ${_companyProfile['weburl']}",
-                                            style: const TextStyle(
-                                              color: Colors.blue,
-                                              decoration:
-                                                  TextDecoration.underline,
-                                            ),
-                                          ),
+                                Row(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    if (_companyProfile['logo'] != null)
+                                      SizedBox(
+                                        height: 100,
+                                        width: 100,
+                                        child: Image.network(
+                                          _companyProfile['logo'],
+                                          fit: BoxFit.contain,
                                         ),
-                                    ],
-                                  ),
+                                      ),
+                                    const SizedBox(width: 16),
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                              "Name: ${_companyProfile['name'] ?? 'N/A'}"),
+                                          Text(
+                                              "Industry: ${_companyProfile['finnhubIndustry'] ?? 'N/A'}"),
+                                          Text(
+                                              "Market Cap: \$${_companyProfile['marketCapitalization'] ?? 'N/A'}B"),
+                                          Text(
+                                              "IPO Date: ${_companyProfile['ipo'] ?? 'N/A'}"),
+                                          if (_companyProfile['weburl'] != null)
+                                            GestureDetector(
+                                              onTap: () => _openWebsite(
+                                                  _companyProfile['weburl']),
+                                              child: Text(
+                                                "Website: ${_companyProfile['weburl']}",
+                                                style: const TextStyle(
+                                                  color: Colors.blue,
+                                                  decoration:
+                                                      TextDecoration.underline,
+                                                ),
+                                              ),
+                                            ),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
                                 ),
-                                IconButton(
-                                  icon: Icon(
-                                    _isInWatchlist
-                                        ? Icons.favorite
-                                        : Icons.favorite_border,
-                                    color: _isInWatchlist
-                                        ? Colors.purple
-                                        : Colors.grey,
+                                Positioned(
+                                  right: 16,
+                                  top: 50, // Adjust vertical position as needed
+                                  child: IconButton(
+                                    icon: Icon(
+                                      _isInWatchlist
+                                          ? Icons.favorite
+                                          : Icons.favorite_border,
+                                      color: _isInWatchlist
+                                          ? Theme.of(context)
+                                              .colorScheme
+                                              .primary
+                                          : Colors.grey,
+                                      size: 30, // Increased size
+                                    ),
+                                    onPressed: _toggleWatchlist,
                                   ),
-                                  onPressed: _toggleWatchlist,
                                 ),
                               ],
                             ),
