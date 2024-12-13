@@ -31,32 +31,51 @@ class _StockOverviewDetailsState extends State<StockOverviewDetails> {
   List<FlSpot> _priceHistory = [];
   List<String> _timestamps = [];
   bool _isInWatchlist = false;
+  bool _hasError = false;
 
   @override
   void initState() {
     super.initState();
-    _stockStream = _apiService.connectRealTimeUpdates([widget.symbol]);
+    _initializeStockData();
     _fetchCompanyProfile(widget.symbol);
     _checkWatchlistStatus();
+  }
 
-    _stockStream.listen((data) {
-      setState(() {
-        _stockData = data[widget.symbol] ?? {};
-        double currentPrice = _stockData['price'] ?? 0;
-        String timestamp = DateFormat('HH:mm:ss').format(DateTime.now());
+  void _initializeStockData() {
+    try {
+      _stockStream = _apiService.connectRealTimeUpdates([widget.symbol]);
+      _stockStream.listen((data) {
+        if (data.containsKey(widget.symbol)) {
+          setState(() {
+            _stockData = data[widget.symbol]!;
+            double currentPrice = _stockData['price'] ?? 0;
+            String timestamp = DateFormat('HH:mm:ss').format(DateTime.now());
 
-        _priceHistory
-            .add(FlSpot(_priceHistory.length.toDouble(), currentPrice));
-        _timestamps.add(timestamp);
+            _priceHistory
+                .add(FlSpot(_priceHistory.length.toDouble(), currentPrice));
+            _timestamps.add(timestamp);
 
-        if (_priceHistory.length > 100) {
-          _priceHistory.removeAt(0);
-          _timestamps.removeAt(0);
+            if (_priceHistory.length > 100) {
+              _priceHistory.removeAt(0);
+              _timestamps.removeAt(0);
+            }
+            _hasError = false; // Reset error state on successful data fetch
+          });
+        } else {
+          setState(() {
+            _hasError = true; // Mark as error if data not found
+          });
         }
+      }, onError: (error) {
+        setState(() {
+          _hasError = true;
+        });
       });
-    }, onError: (error) {
-      print('WebSocket error: $error');
-    });
+    } catch (e) {
+      setState(() {
+        _hasError = true;
+      });
+    }
   }
 
   void _fetchCompanyProfile(String symbol) async {
@@ -101,44 +120,34 @@ class _StockOverviewDetailsState extends State<StockOverviewDetails> {
     super.dispose();
   }
 
-  Widget _leftTitleWidgets(double value, TitleMeta meta) {
-    return Text(
-      '\$${value.toStringAsFixed(2)}',
-      style: const TextStyle(color: Colors.black, fontSize: 10),
-      textAlign: TextAlign.right,
-    );
-  }
-
-  Widget _bottomTitleWidgets(double value, TitleMeta meta) {
-    int index = value.toInt();
-    if (index < _timestamps.length) {
-      return Text(
-        _timestamps[index],
-        style: const TextStyle(color: Colors.black, fontSize: 10),
-      );
-    }
-    return const Text('');
-  }
-
-  void _onTabSelected(BuildContext context, int index) {
-    switch (index) {
-      case 0:
-        Navigator.pushReplacementNamed(context, '/home');
-        break;
-
-      case 1:
-        Navigator.pushReplacementNamed(context, '/watchlist');
-        break;
-      case 2:
-        Navigator.pushReplacementNamed(context, '/newsfeed');
-        break;
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
-    final isPositive =
-        _stockData['change'] != null && _stockData['change'] >= 0;
+    if (_hasError) {
+      return Scaffold(
+        appBar: const CustomAppBar(title: "Stock Overview Details"),
+        drawer: AppDrawer(),
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(Icons.error, color: Colors.red, size: 60),
+              const SizedBox(height: 16),
+              Text(
+                'Failed to load details for "${widget.symbol}".',
+                style: const TextStyle(fontSize: 18),
+              ),
+              const SizedBox(height: 8),
+              const Text('Please try again later or check the stock symbol.'),
+              const SizedBox(height: 20),
+              ElevatedButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('Back to Stocks'),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
 
     return Scaffold(
       appBar: const CustomAppBar(title: "Stock Overview Details"),
@@ -156,9 +165,11 @@ class _StockOverviewDetailsState extends State<StockOverviewDetails> {
                         fontSize: 24, fontWeight: FontWeight.bold),
                   ),
                   Text(
-                    "Change: ${isPositive ? "+" : ""}${_stockData['change']?.toStringAsFixed(2) ?? 'N/A'}%",
+                    "Change: ${(_stockData['change'] ?? 0) >= 0 ? "+" : ""}${_stockData['change']?.toStringAsFixed(2) ?? 'N/A'}%",
                     style: TextStyle(
-                      color: isPositive ? Colors.green : Colors.red,
+                      color: (_stockData['change'] ?? 0) >= 0
+                          ? Colors.green
+                          : Colors.red,
                       fontSize: 18,
                     ),
                   ),
@@ -180,14 +191,28 @@ class _StockOverviewDetailsState extends State<StockOverviewDetails> {
                                   sideTitles: SideTitles(
                                     showTitles: true,
                                     reservedSize: 40,
-                                    getTitlesWidget: _leftTitleWidgets,
+                                    getTitlesWidget: (value, meta) => Text(
+                                      '\$${value.toStringAsFixed(2)}',
+                                      style: const TextStyle(
+                                          color: Colors.black, fontSize: 10),
+                                    ),
                                   ),
                                 ),
                                 bottomTitles: AxisTitles(
                                   sideTitles: SideTitles(
                                     showTitles: true,
                                     reservedSize: 32,
-                                    getTitlesWidget: _bottomTitleWidgets,
+                                    getTitlesWidget: (value, meta) {
+                                      int index = value.toInt();
+                                      return index < _timestamps.length
+                                          ? Text(
+                                              _timestamps[index],
+                                              style: const TextStyle(
+                                                  color: Colors.black,
+                                                  fontSize: 10),
+                                            )
+                                          : const Text('');
+                                    },
                                   ),
                                 ),
                               ),
@@ -287,8 +312,20 @@ class _StockOverviewDetailsState extends State<StockOverviewDetails> {
               ),
             ),
       bottomNavigationBar: BottomNavBar(
-        currentIndex: 1, // Home is the first tab
-        onTabSelected: (index) => _onTabSelected(context, index),
+        currentIndex: 1,
+        onTabSelected: (index) {
+          switch (index) {
+            case 0:
+              Navigator.pushReplacementNamed(context, '/home');
+              break;
+            case 1:
+              Navigator.pushReplacementNamed(context, '/watchlist');
+              break;
+            case 2:
+              Navigator.pushReplacementNamed(context, '/newsfeed');
+              break;
+          }
+        },
       ),
     );
   }
